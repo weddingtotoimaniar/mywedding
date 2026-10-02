@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Undangan Pernikahan - Toto & Imaniar</title>
+
+    <meta property="og:title" content="Undangan Pernikahan Toto & Imaniar">
+    <meta property="og:description" content="Minggu, 04 Oktober 2026 · Akad Nikah. Kami mengundang Bapak/Ibu/Saudara/i untuk hadir dan memberikan doa restu.">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="Media/Pictures/BG1.png">
+    <!-- GANTI og:image di atas dengan URL foto pengantin setelah tersambung -->
+    <meta name="description" content="Undangan pernikahan Toto Sugianto & Imaniar Puji Astuti, Minggu 04 Oktober 2026">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'display': ['Playfair Display', 'serif'],
+                        'sans': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'ink': '#2B2825',
+                        'paper': '#FAF8F4',
+                        'line': '#C9B79C',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        * { -webkit-tap-highlight-color: transparent; }
+        html, body { overflow-x: hidden; width: 100%; }
+
+        :root { --ease-soft: cubic-bezier(0.22, 1, 0.36, 1); }
+
+        body.locked { overflow: hidden; height: 100%; }
+
+        /* SCROLL-SNAP BOOK LAYOUT */
+        #book {
+            height: 100svh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+        }
+        .page {
+            height: 100svh;
+            width: 100%;
+            scroll-snap-align: start;
+            scroll-snap-stop: always;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        /* Pages with more content than fits one screen: allow internal scroll, still snap to start */
+        .page.page-scroll {
+            align-items: flex-start;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .page-bg {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            z-index: 0;
+        }
+        .page-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+        }
+        .page-content {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+        }
+
+        /* Page dot indicator */
+        #pageDots {
+            position: fixed;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 40;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .page-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: rgba(43,40,37,0.25);
+            transition: background-color 0.4s var(--ease-soft), transform 0.4s var(--ease-soft), height 0.4s var(--ease-soft);
+        }
+        .page-dot.active {
+            background-color: #2B2825;
+            height: 18px;
+            border-radius: 3px;
+        }
+        .page-dot.light { background-color: rgba(250,248,244,0.4); }
+        .page-dot.light.active { background-color: #FAF8F4; }
+
+        /* Small, quiet buttons */
+        .btn-soft {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.5rem 1.1rem;
+            font-size: 0.7rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            border-radius: 999px;
+            border: 1px solid currentColor;
+            transition: opacity 0.4s var(--ease-soft), transform 0.3s var(--ease-soft);
+        }
+        .btn-soft:active { transform: scale(0.96); }
+        .btn-soft:hover { opacity: 0.65; }
+
+        .btn-soft-fill {
+            background-color: #2B2825;
+            color: #FAF8F4;
+            border-color: #2B2825;
+        }
+
+        .eyebrow {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.65rem;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+        }
+
+        .fade-in {
+            opacity: 0;
+            transform: translateY(16px);
+            transition: opacity 0.9s var(--ease-soft), transform 0.9s var(--ease-soft);
+        }
+        .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+        @media (prefers-reduced-motion: reduce) {
+            .fade-in { transition: none !important; opacity: 1; transform: none; }
+            #book { scroll-behavior: auto; }
+        }
+
+        .hero-name { font-size: clamp(2.4rem, 10vw, 4rem); line-height: 1.1; }
+        .cover-name { font-size: clamp(2.5rem, 11vw, 4.5rem); line-height: 1.1; }
+
+        .cd-num { font-size: clamp(1.5rem, 5.5vw, 2.2rem); font-weight: 500; }
+
+        input, textarea { font-family: 'Inter', sans-serif; }
+        input:focus, textarea:focus { outline: none; }
+
+        /* Scroll hint chevron */
+        @keyframes floatDown {
+            0%, 100% { transform: translateY(0); opacity: 0.5; }
+            50% { transform: translateY(6px); opacity: 1; }
+        }
+        .scroll-chevron { animation: floatDown 2.2s var(--ease-soft) infinite; }
+        @media (prefers-reduced-motion: reduce) { .scroll-chevron { animation: none; } }
+
+        .wish-enter { animation: wishEnter 0.6s var(--ease-soft) forwards; }
+        @keyframes wishEnter {
+            from { opacity: 0; transform: translateY(-6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Thin divider */
+        .hr-thin { height: 1px; background-color: rgba(43,40,37,0.12); border: none; }
+    </style>
+</head>
+<body class="bg-paper text-ink font-sans locked">
+
+    <!-- AUDIO -->
+    <audio id="bgMusic" loop preload="none">
+        <source src="Media/Audio/musiclatar.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- MUSIC TOGGLE -->
+    <button id="musicToggle" aria-label="Putar atau jeda musik" class="fixed bottom-5 left-5 z-50 bg-ink/90 text-paper w-10 h-10 rounded-full shadow-md hidden items-center justify-center transition hover:opacity-80 active:scale-95 backdrop-blur">
+        <svg id="musicIcon" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+        </svg>
+    </button>
+
+    <!-- PAGE DOTS (shown once invitation is open) -->
+    <div id="pageDots" class="hidden"></div>
+
+    <!-- COVER -->
+    <div id="coverScreen" class="fixed inset-0 z-50 flex flex-col items-center justify-center text-center px-6 py-10 transition-opacity duration-700 bg-cover bg-center" style="transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1); background-image: linear-gradient(rgba(250,248,244,0.88), rgba(250,248,244,0.93)), url('https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80&w=1200');">
+        <!-- GANTI url background di atas dengan foto pengantin setelah tersambung -->
+        <p class="eyebrow mb-8 text-ink/60">Undangan Pernikahan</p>
+        <h1 class="font-display cover-name text-ink mb-8 px-2">Toto &amp; Imaniar</h1>
+        <p class="mb-1 text-sm text-ink/60">Kepada Yth.</p>
+        <p id="guestName" class="mb-10 text-base font-medium">Bapak/Ibu/Saudara/i</p>
+        <button onclick="openInvitation()" class="btn-soft btn-soft-fill">
+            Buka Undangan
+        </button>
+    </div>
+
+    <!-- BOOK: scroll-snap pages -->
+    <div id="book" class="opacity-0 transition-opacity duration-700" style="transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);">
+
+        <!-- PAGE 1: HERO -->
+        <section class="page" data-dot-style="light">
+            <div class="page-bg" style="background-image: url('https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80&w=1400');"></div>
+            <!-- GANTI url background di atas dengan: url('Media/Pictures/BG1.png') setelah foto tersambung -->
+            <div class="page-overlay bg-gradient-to-b from-black/35 via-black/25 to-black/45"></div>
+            <div class="page-content text-center px-6 text-white fade-in">
+                <p class="eyebrow mb-6 text-white/80">The Wedding Of</p>
+                <h1 class="font-display hero-name mb-2">Toto Sugianto</h1>
+                <p class="font-display text-xl my-1 text-white/70">&amp;</p>
+                <h1 class="font-display hero-name mb-6">Imaniar Puji Astuti</h1>
+                <div class="w-10 h-px bg-white/50 mx-auto mb-6"></div>
+                <p class="text-sm text-white/85">Minggu, 04 Oktober 2026</p>
+            </div>
+            <div class="absolute bottom-7 left-1/2 -translate-x-1/2 z-10 scroll-chevron">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white/80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                </svg>
+            </div>
+        </section>
+
+        <!-- PAGE 2: AYAT -->
+        <section class="page" data-dot-style="dark">
+            <div class="page-bg bg-paper"></div>
+            <div class="page-content text-center px-8 fade-in max-w-lg mx-auto">
+                <p class="eyebrow text-ink/50 mb-8">QS. Ar-Rum : 21</p>
+                <p class="font-display text-lg sm:text-2xl text-ink leading-relaxed">
+                    "Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu istri-istri dari jenismu sendiri, supaya kamu cenderung dan merasa tenteram kepadanya, dan dijadikan-Nya diantaramu rasa kasih dan sayang."
+                </p>
+                <div class="w-10 h-px bg-line mx-auto mt-8"></div>
+            </div>
+        </section>
+
+        <!-- PAGE 3: MEMPELAI -->
+        <section class="page page-scroll" data-dot-style="dark">
+            <div class="page-bg bg-paper"></div>
+            <div class="page-content px-6 py-16 fade-in">
+                <div class="max-w-3xl mx-auto text-center">
+                    <p class="eyebrow text-ink/50 mb-3">Maha Suci Allah</p>
+                    <p class="text-sm text-ink/60 mb-12 max-w-md mx-auto leading-relaxed">Yang telah menciptakan makhluk-Nya berpasang-pasangan. Ya Allah, perkenankanlah kami merangkai kasih sayang yang Kau ciptakan di antara putra-putri kami.</p>
+
+                    <div class="grid sm:grid-cols-2 gap-12 sm:gap-8">
+                        <div class="flex flex-col items-center text-center">
+                            <div class="w-28 h-28 sm:w-32 sm:h-32 rounded-full overflow-hidden mb-5">
+                                <img src="Media/Pictures/WhatsApp Image 2026-09-27 at 22.14.06.jpeg" alt="Toto Sugianto" class="w-full h-full object-cover" loading="lazy">
+                            </div>
+                            <h3 class="font-display text-2xl text-ink mb-2">Toto Sugianto</h3>
+                            <p class="text-xs text-ink/55 leading-relaxed">Putra dari<br>Bapak Kotim Sayuti &amp; Ibu Dati (Ka. Laban)</p>
+                        </div>
+                        <div class="flex flex-col items-center text-center">
+                            <div class="w-28 h-28 sm:w-32 sm:h-32 rounded-full overflow-hidden mb-5">
+                                <img src="Media/Pictures/WhatsApp Image 2026-09-27 at 22.14.06 (1).jpeg" alt="Imaniar Puji Astuti" class="w-full h-full object-cover" loading="lazy">
+                            </div>
+                            <h3 class="font-display text-2xl text-ink mb-2">Imaniar Puji Astuti</h3>
+                            <p class="text-xs text-ink/55 leading-relaxed">Putri dari<br>Bapak Budi Mulyono &amp; Ibu Iim Halima</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 4: ACARA & COUNTDOWN -->
+        <section class="page page-scroll" data-dot-style="dark">
+            <div class="page-bg bg-paper"></div>
+            <div class="page-content px-6 py-16 fade-in">
+                <div class="max-w-md mx-auto text-center">
+                    <p class="eyebrow text-ink/50 mb-3">Menghitung Hari</p>
+                    <h2 class="font-display text-3xl sm:text-4xl text-ink mb-10">Resepsi Pernikahan</h2>
+
+                    <div class="grid grid-cols-4 divide-x divide-ink/10 mb-10">
+                        <div class="px-1"><span id="days" class="cd-num block font-display text-ink">00</span><span class="text-[9px] text-ink/45 tracking-wider uppercase">Hari</span></div>
+                        <div class="px-1"><span id="hours" class="cd-num block font-display text-ink">00</span><span class="text-[9px] text-ink/45 tracking-wider uppercase">Jam</span></div>
+                        <div class="px-1"><span id="minutes" class="cd-num block font-display text-ink">00</span><span class="text-[9px] text-ink/45 tracking-wider uppercase">Menit</span></div>
+                        <div class="px-1"><span id="seconds" class="cd-num block font-display text-ink">00</span><span class="text-[9px] text-ink/45 tracking-wider uppercase">Detik</span></div>
+                    </div>
+
+                    <hr class="hr-thin mb-8">
+
+                    <p class="font-display text-xl text-ink mb-1">Minggu, 04 Oktober 2026</p>
+                    <p class="text-xs text-ink/55 mb-8">Pukul 08.00 WIB s/d Selesai</p>
+
+                    <p class="eyebrow text-ink/40 mb-2 text-[9px]">Lokasi Acara</p>
+                    <p class="text-sm text-ink mb-1">Kediaman Kami</p>
+                    <p class="text-xs text-ink/50 mb-8">Dusun Ciliang RT 003/005, Desa Ciliang, Kec. Parigi, Kab. Pangandaran</p>
+
+                    <p class="eyebrow text-ink/40 mb-2 text-[9px]">Hiburan</p>
+                    <p class="text-sm text-ink mb-8">Orkes IpoNG CROUP</p>
+
+                    <div class="flex flex-wrap justify-center gap-2.5 mb-8">
+                        <a href="https://maps.app.goo.gl/W8r8WstyoVvfCWeJ7?g_st=ac" target="_blank" rel="noopener" class="btn-soft text-ink">Buka Maps</a>
+                        <button onclick="addToCalendar()" class="btn-soft text-ink">Simpan Kalender</button>
+                    </div>
+
+                    <hr class="hr-thin mb-8">
+
+                    <p class="text-xs text-ink/50 italic leading-relaxed mb-8 max-w-xs mx-auto">
+                        Mengingat acara ini diselenggarakan secara sederhana dan terbatas, kehadiran serta doa restu dari keluarga dan kerabat terdekat akan sangat bermakna bagi kami.
+                    </p>
+
+                    <button onclick="shareWhatsApp()" class="btn-soft text-ink">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M20.52 3.48A11.93 11.93 0 0012.02 0C5.4 0 .03 5.37.03 12c0 2.11.55 4.17 1.6 5.99L0 24l6.18-1.62A11.97 11.97 0 0012.02 24c6.63 0 12-5.37 12-12 0-3.2-1.25-6.21-3.5-8.52zM12.02 21.8a9.8 9.8 0 01-5-1.36l-.36-.21-3.67.96.98-3.58-.24-.37a9.8 9.8 0 01-1.5-5.24c0-5.42 4.4-9.82 9.82-9.82 2.62 0 5.08 1.02 6.94 2.88a9.76 9.76 0 012.87 6.94c0 5.42-4.41 9.8-9.84 9.8z"/></svg>
+                        Bagikan
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 5: GALERI -->
+        <section class="page page-scroll" data-dot-style="dark">
+            <div class="page-bg bg-[#F3F0E9]"></div>
+            <div class="page-content px-6 py-16 fade-in">
+                <div class="max-w-3xl mx-auto">
+                    <div class="text-center mb-10">
+                        <p class="eyebrow text-ink/50 mb-3">Momen Kami</p>
+                        <h2 class="font-display text-3xl sm:text-4xl text-ink">Galeri Foto</h2>
+                    </div>
+                    <div class="grid grid-cols-2 gap-1.5">
+                        <div class="aspect-square overflow-hidden rounded-sm"><img src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&q=80&w=600" alt="Galeri 1" class="w-full h-full object-cover" loading="lazy"></div>
+                        <div class="aspect-square overflow-hidden rounded-sm"><img src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=600" alt="Galeri 2" class="w-full h-full object-cover" loading="lazy"></div>
+                        <div class="aspect-square overflow-hidden rounded-sm"><img src="https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&q=80&w=600" alt="Galeri 3" class="w-full h-full object-cover" loading="lazy"></div>
+                        <div class="aspect-square overflow-hidden rounded-sm"><img src="https://images.unsplash.com/photo-1606800052052-a08af7148866?auto=format&fit=crop&q=80&w=600" alt="Galeri 4" class="w-full h-full object-cover" loading="lazy"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 6: AMPLOP DIGITAL -->
+        <section class="page page-scroll" data-dot-style="dark">
+            <div class="page-bg bg-paper"></div>
+            <div class="page-content px-6 py-16 fade-in">
+                <div class="max-w-sm mx-auto text-center">
+                    <p class="eyebrow text-ink/50 mb-3">Tanda Kasih</p>
+                    <h2 class="font-display text-3xl sm:text-4xl text-ink mb-6">Amplop Digital</h2>
+                    <p class="text-sm text-ink/55 mb-10 leading-relaxed">
+                        Doa restu Anda adalah karunia terindah bagi kami. Namun jika ingin memberi tanda kasih, kami sediakan opsi berikut.
+                    </p>
+
+                    <div class="space-y-6">
+                        <div class="text-left border-t border-ink/10 pt-5">
+                            <p class="eyebrow text-ink/40 mb-2 text-[9px]">Bank [Nama Bank]</p>
+                            <p class="font-display text-lg text-ink mb-1" id="rek1-nomor">0000 0000 0000</p>
+                            <p class="text-xs text-ink/50 mb-3">a.n. Toto Sugianto</p>
+                            <button onclick="copyToClipboard('rek1-nomor', this)" class="btn-soft text-ink text-[10px]">
+                                <span class="copy-label">Salin Nomor</span>
+                            </button>
+                        </div>
+                        <div class="text-left border-t border-ink/10 pt-5">
+                            <p class="eyebrow text-ink/40 mb-2 text-[9px]">Bank [Nama Bank]</p>
+                            <p class="font-display text-lg text-ink mb-1" id="rek2-nomor">0000 0000 0000</p>
+                            <p class="text-xs text-ink/50 mb-3">a.n. Imaniar Puji Astuti</p>
+                            <button onclick="copyToClipboard('rek2-nomor', this)" class="btn-soft text-ink text-[10px]">
+                                <span class="copy-label">Salin Nomor</span>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- GANTI nomor rekening & nama bank di atas dengan data asli -->
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 7: UCAPAN & DOA -->
+        <section class="page page-scroll" data-dot-style="dark">
+            <div class="page-bg bg-[#F3F0E9]"></div>
+            <div class="page-content px-6 py-16 fade-in">
+                <div class="max-w-sm mx-auto">
+                    <div class="text-center mb-8">
+                        <p class="eyebrow text-ink/50 mb-3">Untuk Kami</p>
+                        <h2 class="font-display text-3xl sm:text-4xl text-ink">Ucapan &amp; Doa</h2>
+                    </div>
+
+                    <form id="wishForm" class="mb-10">
+                        <div class="mb-5">
+                            <label for="wishName" class="eyebrow block mb-2 text-ink/40 text-[9px]">Nama Anda</label>
+                            <input type="text" id="wishName" required maxlength="60" placeholder="Tulis nama Anda"
+                                class="w-full px-0 py-2 bg-transparent border-b border-ink/20 text-sm placeholder:text-ink/30 focus:border-ink transition-colors">
+                        </div>
+                        <div class="mb-6">
+                            <label for="wishMessage" class="eyebrow block mb-2 text-ink/40 text-[9px]">Ucapan &amp; Doa</label>
+                            <textarea id="wishMessage" required maxlength="300" rows="3" placeholder="Tulis ucapan dan doa terbaik Anda..."
+                                class="w-full px-0 py-2 bg-transparent border-b border-ink/20 text-sm resize-none placeholder:text-ink/30 focus:border-ink transition-colors"></textarea>
+                        </div>
+                        <button type="submit" class="btn-soft btn-soft-fill w-full justify-center">Kirim Ucapan</button>
+                        <p class="text-[10px] text-ink/40 text-center mt-3">Ucapan tampil selama sesi kunjungan Anda berlangsung.</p>
+                    </form>
+
+                    <div id="wishList" class="space-y-0">
+                        <div class="wish-item border-t border-ink/10 py-5">
+                            <p class="text-sm font-medium text-ink mb-1">Keluarga Besar</p>
+                            <p class="text-sm text-ink/60 leading-relaxed">Selamat menempuh hidup baru, semoga menjadi keluarga yang sakinah, mawaddah, warahmah. Aamiin.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 8: PENUTUP -->
+        <section class="page" data-dot-style="light">
+            <div class="page-bg" style="background-image: url('https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&q=80&w=1400');"></div>
+            <div class="page-overlay bg-black/50"></div>
+            <div class="page-content text-center px-6 text-white fade-in">
+                <h2 class="font-display text-3xl sm:text-4xl mb-5">Toto &amp; Imaniar</h2>
+                <p class="text-xs text-white/75 max-w-xs mx-auto leading-relaxed mb-6">
+                    Terima kasih atas doa dan restu yang telah diberikan. Semoga Allah SWT membalas kebaikan Bapak/Ibu/Saudara/i sekalian.
+                </p>
+                <p class="text-[10px] text-white/50 tracking-wide">&copy; 2026 Toto Sugianto &amp; Imaniar Puji Astuti</p>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        const coverScreen = document.getElementById('coverScreen');
+        const book = document.getElementById('book');
+        const body = document.body;
+        const bgMusic = document.getElementById('bgMusic');
+        const musicToggle = document.getElementById('musicToggle');
+        const pageDots = document.getElementById('pageDots');
+        let isPlaying = false;
+
+        function openInvitation() {
+            coverScreen.style.opacity = '0';
+            setTimeout(() => {
+                coverScreen.style.display = 'none';
+                body.classList.remove('locked');
+                requestAnimationFrame(() => {
+                    book.classList.remove('opacity-0');
+                });
+                pageDots.classList.remove('hidden');
+                pageDots.classList.add('flex');
+                playMusic();
+            }, 600);
+        }
+
+        function playMusic() {
+            bgMusic.play().then(() => {
+                isPlaying = true;
+                musicToggle.classList.remove('hidden');
+                musicToggle.classList.add('flex');
+            }).catch(() => {
+                isPlaying = false;
+                musicToggle.classList.remove('hidden');
+                musicToggle.classList.add('flex');
+            });
+        }
+
+        (function setGuestName() {
+            const params = new URLSearchParams(window.location.search);
+            const to = params.get('to');
+            if (to && to.trim().length > 0) {
+                document.getElementById('guestName').innerText = decodeURIComponent(to.trim());
+            }
+        })();
+
+        musicToggle.addEventListener('click', () => {
+            if (isPlaying) { bgMusic.pause(); } else { bgMusic.play(); }
+            isPlaying = !isPlaying;
+        });
+
+        // Countdown
+        const targetDate = new Date(2026, 9, 4, 8, 0, 0).getTime();
+        const daysEl = document.getElementById('days');
+        const hoursEl = document.getElementById('hours');
+        const minutesEl = document.getElementById('minutes');
+        const secondsEl = document.getElementById('seconds');
+
+        setInterval(() => {
+            const now = new Date().getTime();
+            const distance = targetDate - now;
+            if (distance < 0) {
+                daysEl.innerText = hoursEl.innerText = minutesEl.innerText = secondsEl.innerText = "00";
+                return;
+            }
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            daysEl.innerText = days.toString().padStart(2, '0');
+            hoursEl.innerText = hours.toString().padStart(2, '0');
+            minutesEl.innerText = minutes.toString().padStart(2, '0');
+            secondsEl.innerText = seconds.toString().padStart(2, '0');
+        }, 1000);
+
+        // Fade-in on page entry
+        const fadeElements = document.querySelectorAll('.fade-in');
+        const fadeObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                } else {
+                    entry.target.classList.remove('visible');
+                }
+            });
+        }, { root: book, threshold: 0.35 });
+        fadeElements.forEach(el => fadeObserver.observe(el));
+
+        // Page dot indicator
+        const pages = document.querySelectorAll('.page');
+        pages.forEach((_, i) => {
+            const dot = document.createElement('div');
+            dot.className = 'page-dot';
+            dot.dataset.index = i;
+            pageDots.appendChild(dot);
+        });
+        const dots = document.querySelectorAll('.page-dot');
+
+        function setActiveDotStyle(page) {
+            const style = page.dataset.dotStyle || 'dark';
+            dots.forEach(d => d.classList.toggle('light', style === 'light'));
+        }
+
+        const dotObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const idx = Array.from(pages).indexOf(entry.target);
+                    dots.forEach(d => d.classList.remove('active'));
+                    if (dots[idx]) dots[idx].classList.add('active');
+                    setActiveDotStyle(entry.target);
+                }
+            });
+        }, { root: book, threshold: 0.5 });
+        pages.forEach(p => dotObserver.observe(p));
+
+        dots.forEach(dot => {
+            dot.addEventListener('click', () => {
+                const idx = parseInt(dot.dataset.index, 10);
+                pages[idx].scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+
+        // Simpan ke Kalender (.ics)
+        function addToCalendar() {
+            const start = '20261004T010000Z';
+            const end   = '20261004T100000Z';
+            const icsContent = [
+                'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Undangan Toto Imaniar//ID','BEGIN:VEVENT',
+                'UID:' + Date.now() + '@undangan-totoimaniar',
+                'DTSTAMP:' + start, 'DTSTART:' + start, 'DTEND:' + end,
+                'SUMMARY:Akad Nikah Toto & Imaniar',
+                'DESCRIPTION:Akad Nikah Toto Sugianto & Imaniar Puji Astuti. Mohon doa restunya.',
+                'LOCATION:Kediaman Kami, Dusun Ciliang RT 003/005, Desa Ciliang, Kec. Parigi, Kab. Pangandaran',
+                'END:VEVENT','END:VCALENDAR'
+            ].join('\r\n');
+            const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = 'Akad-Nikah-Toto-Imaniar.ics';
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function shareWhatsApp() {
+            const text = 'Assalamu\'alaikum, kami mengundang Bapak/Ibu/Saudara/i pada acara Resepsi Pernikahan kami:\n\nToto Sugianto & Imaniar Puji Astuti\nMinggu, 04 Oktober 2026\n\nBerikut link undangan lengkap:\n' + window.location.href;
+            window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+        }
+
+        function copyToClipboard(elementId, btn) {
+            const text = document.getElementById(elementId).innerText.replace(/\s/g, '');
+            const label = btn.querySelector('.copy-label');
+            const originalText = label.innerText;
+            function showCopied() {
+                label.innerText = 'Tersalin!';
+                setTimeout(() => { label.innerText = originalText; }, 2000);
+            }
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(showCopied).catch(() => fallbackCopy(text, showCopied));
+            } else {
+                fallbackCopy(text, showCopied);
+            }
+        }
+
+        function fallbackCopy(text, cb) {
+            const ta = document.createElement('textarea');
+            ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+            document.body.appendChild(ta); ta.select();
+            try { document.execCommand('copy'); cb(); } catch (e) { console.log('Copy failed', e); }
+            document.body.removeChild(ta);
+        }
+
+        // Ucapan & Doa
+        const wishForm = document.getElementById('wishForm');
+        const wishList = document.getElementById('wishList');
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.innerText = str;
+            return div.innerHTML;
+        }
+        wishForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const nameInput = document.getElementById('wishName');
+            const messageInput = document.getElementById('wishMessage');
+            const name = nameInput.value.trim();
+            const message = messageInput.value.trim();
+            if (!name || !message) return;
+            const item = document.createElement('div');
+            item.className = 'wish-item border-t border-ink/10 py-5 wish-enter';
+            item.innerHTML =
+                '<p class="text-sm font-medium text-ink mb-1">' + escapeHtml(name) + '</p>' +
+                '<p class="text-sm text-ink/60 leading-relaxed">' + escapeHtml(message) + '</p>';
+            wishList.insertBefore(item, wishList.firstChild);
+            nameInput.value = '';
+            messageInput.value = '';
+        });
+    </script>
+</body>
+</html>
