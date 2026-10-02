@@ -63,11 +63,16 @@
             justify-content: center;
             overflow: hidden;
         }
-        /* Pages with more content than fits one screen: allow internal scroll, still snap to start */
+        /* Halaman dengan konten lebih tinggi dari layar: bisa scroll di dalam halaman.
+           margin auto membuat konten tetap di tengah jika pendek, dan mulai dari atas jika panjang. */
         .page.page-scroll {
             align-items: flex-start;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
+        }
+        .page.page-scroll > .page-content {
+            margin-top: auto;
+            margin-bottom: auto;
         }
 
         .page-bg {
@@ -179,6 +184,90 @@
 
         /* Thin divider */
         .hr-thin { height: 1px; background-color: rgba(43,40,37,0.12); border: none; }
+
+        /* GALERI */
+        #galleryGrid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 6px;
+        }
+        .gallery-item {
+            position: relative;
+            aspect-ratio: 1 / 1;
+            overflow: hidden;
+            border-radius: 2px;
+            background-color: #E6E0D3;
+            cursor: zoom-in;
+            padding: 0;
+            border: 0;
+        }
+        .gallery-item.wide { grid-column: span 2; aspect-ratio: 4 / 3; }
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            opacity: 0;
+            transition: opacity 0.6s var(--ease-soft), transform 0.8s var(--ease-soft);
+        }
+        .gallery-item img.loaded { opacity: 1; }
+        .gallery-item:hover img.loaded { transform: scale(1.04); }
+        .gallery-item:focus-visible { outline: 2px solid #2B2825; outline-offset: 2px; }
+        @media (min-width: 640px) {
+            #galleryGrid { gap: 8px; }
+        }
+
+        /* LIGHTBOX */
+        #lightbox {
+            position: fixed;
+            inset: 0;
+            z-index: 60;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(15,14,12,0.94);
+            opacity: 0;
+            transition: opacity 0.35s var(--ease-soft);
+            touch-action: pan-y;
+        }
+        #lightbox.open { display: flex; }
+        #lightbox.show { opacity: 1; }
+        #lightboxImg {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            padding: 3.5rem 0.75rem;
+            user-select: none;
+            -webkit-user-drag: none;
+        }
+        .lb-btn {
+            position: absolute;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: #FAF8F4;
+            background-color: rgba(250,248,244,0.12);
+            transition: background-color 0.3s var(--ease-soft), transform 0.3s var(--ease-soft);
+        }
+        .lb-btn:hover { background-color: rgba(250,248,244,0.25); }
+        .lb-btn:active { transform: scale(0.94); }
+        .lb-btn:focus-visible { outline: 2px solid #FAF8F4; outline-offset: 2px; }
+        #lbClose { top: 12px; right: 12px; }
+        #lbPrev { left: 10px; top: 50%; margin-top: -20px; }
+        #lbNext { right: 10px; top: 50%; margin-top: -20px; }
+        #lbCounter {
+            position: absolute;
+            bottom: 16px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 0.7rem;
+            letter-spacing: 0.2em;
+            color: rgba(250,248,244,0.7);
+        }
     </style>
 </head>
 <body class="bg-paper text-ink font-sans locked">
@@ -197,6 +286,21 @@
 
     <!-- PAGE DOTS (shown once invitation is open) -->
     <div id="pageDots" class="hidden"></div>
+
+    <!-- LIGHTBOX FOTO -->
+    <div id="lightbox" role="dialog" aria-modal="true" aria-label="Tampilan foto">
+        <img id="lightboxImg" src="" alt="">
+        <button id="lbClose" class="lb-btn" aria-label="Tutup">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+        <button id="lbPrev" class="lb-btn" aria-label="Foto sebelumnya">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 5l-7 7 7 7"/></svg>
+        </button>
+        <button id="lbNext" class="lb-btn" aria-label="Foto berikutnya">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5l7 7-7 7"/></svg>
+        </button>
+        <p id="lbCounter"></p>
+    </div>
 
     <!-- COVER -->
     <div id="coverScreen" class="fixed inset-0 z-50 flex flex-col items-center justify-center text-center px-6 py-10 transition-opacity duration-700 bg-cover bg-center" style="transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1); background-image: linear-gradient(rgba(250,248,244,0.88), rgba(250,248,244,0.93)), url('https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80&w=1200');">
@@ -323,58 +427,21 @@
         <section class="page page-scroll" data-dot-style="dark">
             <div class="page-bg bg-[#F3F0E9]"></div>
             <div class="page-content px-6 py-16 fade-in">
-                <div class="max-w-3xl mx-auto">
+                <div class="max-w-xl mx-auto">
                     <div class="text-center mb-10">
                         <p class="eyebrow text-ink/50 mb-3">Momen Kami</p>
                         <h2 class="font-display text-3xl sm:text-4xl text-ink">Galeri Foto</h2>
                     </div>
-                    <div class="grid grid-cols-2 gap-1.5">
-                        <div class="aspect-square overflow-hidden rounded-sm"><img src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&q=80&w=600" alt="Galeri 1" class="w-full h-full object-cover" loading="lazy"></div>
-                        <div class="aspect-square overflow-hidden rounded-sm"><img src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=600" alt="Galeri 2" class="w-full h-full object-cover" loading="lazy"></div>
-                        <div class="aspect-square overflow-hidden rounded-sm"><img src="https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&q=80&w=600" alt="Galeri 3" class="w-full h-full object-cover" loading="lazy"></div>
-                        <div class="aspect-square overflow-hidden rounded-sm"><img src="https://images.unsplash.com/photo-1606800052052-a08af7148866?auto=format&fit=crop&q=80&w=600" alt="Galeri 4" class="w-full h-full object-cover" loading="lazy"></div>
-                    </div>
+                    <!-- Foto dibuat otomatis dari daftar galleryPhotos di bagian script -->
+                    <div id="galleryGrid"></div>
+                    <p class="text-[10px] text-ink/40 text-center mt-4">Ketuk foto untuk memperbesar</p>
                 </div>
             </div>
         </section>
 
-        <!-- PAGE 6: AMPLOP DIGITAL -->
+        <!-- PAGE 6: UCAPAN & DOA -->
         <section class="page page-scroll" data-dot-style="dark">
             <div class="page-bg bg-paper"></div>
-            <div class="page-content px-6 py-16 fade-in">
-                <div class="max-w-sm mx-auto text-center">
-                    <p class="eyebrow text-ink/50 mb-3">Tanda Kasih</p>
-                    <h2 class="font-display text-3xl sm:text-4xl text-ink mb-6">Amplop Digital</h2>
-                    <p class="text-sm text-ink/55 mb-10 leading-relaxed">
-                        Doa restu Anda adalah karunia terindah bagi kami. Namun jika ingin memberi tanda kasih, kami sediakan opsi berikut.
-                    </p>
-
-                    <div class="space-y-6">
-                        <div class="text-left border-t border-ink/10 pt-5">
-                            <p class="eyebrow text-ink/40 mb-2 text-[9px]">Bank [Nama Bank]</p>
-                            <p class="font-display text-lg text-ink mb-1" id="rek1-nomor">0000 0000 0000</p>
-                            <p class="text-xs text-ink/50 mb-3">a.n. Toto Sugianto</p>
-                            <button onclick="copyToClipboard('rek1-nomor', this)" class="btn-soft text-ink text-[10px]">
-                                <span class="copy-label">Salin Nomor</span>
-                            </button>
-                        </div>
-                        <div class="text-left border-t border-ink/10 pt-5">
-                            <p class="eyebrow text-ink/40 mb-2 text-[9px]">Bank [Nama Bank]</p>
-                            <p class="font-display text-lg text-ink mb-1" id="rek2-nomor">0000 0000 0000</p>
-                            <p class="text-xs text-ink/50 mb-3">a.n. Imaniar Puji Astuti</p>
-                            <button onclick="copyToClipboard('rek2-nomor', this)" class="btn-soft text-ink text-[10px]">
-                                <span class="copy-label">Salin Nomor</span>
-                            </button>
-                        </div>
-                    </div>
-                    <!-- GANTI nomor rekening & nama bank di atas dengan data asli -->
-                </div>
-            </div>
-        </section>
-
-        <!-- PAGE 7: UCAPAN & DOA -->
-        <section class="page page-scroll" data-dot-style="dark">
-            <div class="page-bg bg-[#F3F0E9]"></div>
             <div class="page-content px-6 py-16 fade-in">
                 <div class="max-w-sm mx-auto">
                     <div class="text-center mb-8">
@@ -407,7 +474,7 @@
             </div>
         </section>
 
-        <!-- PAGE 8: PENUTUP -->
+        <!-- PAGE 7: PENUTUP -->
         <section class="page" data-dot-style="light">
             <div class="page-bg" style="background-image: url('https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&q=80&w=1400');"></div>
             <div class="page-overlay bg-black/50"></div>
@@ -504,7 +571,7 @@
                     entry.target.classList.remove('visible');
                 }
             });
-        }, { root: book, threshold: 0.35 });
+        }, { root: book, threshold: 0.2 });
         fadeElements.forEach(el => fadeObserver.observe(el));
 
         // Page dot indicator
@@ -567,28 +634,103 @@
             window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
         }
 
-        function copyToClipboard(elementId, btn) {
-            const text = document.getElementById(elementId).innerText.replace(/\s/g, '');
-            const label = btn.querySelector('.copy-label');
-            const originalText = label.innerText;
-            function showCopied() {
-                label.innerText = 'Tersalin!';
-                setTimeout(() => { label.innerText = originalText; }, 2000);
-            }
-            if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(text).then(showCopied).catch(() => fallbackCopy(text, showCopied));
-            } else {
-                fallbackCopy(text, showCopied);
-            }
+        // ===== GALERI FOTO =====
+        // Untuk mengganti foto: edit daftar di bawah ini (cukup src dan alt).
+        // Contoh foto sendiri: { src: 'Media/Pictures/foto1.jpg', alt: 'Toto & Imaniar' }
+        // Foto pertama tampil besar. Foto yang gagal dimuat otomatis disembunyikan.
+        const galleryPhotos = [
+            { src: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80&w=1000', alt: 'Foto galeri 1' },
+            { src: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&q=80&w=1000', alt: 'Foto galeri 2' },
+            { src: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=1000', alt: 'Foto galeri 3' },
+            { src: 'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&q=80&w=1000', alt: 'Foto galeri 4' },
+            { src: 'https://images.unsplash.com/photo-1606800052052-a08af7148866?auto=format&fit=crop&q=80&w=1000', alt: 'Foto galeri 5' }
+        ];
+
+        const galleryGrid = document.getElementById('galleryGrid');
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightboxImg');
+        const lbCounter = document.getElementById('lbCounter');
+        let currentIndex = 0;
+
+        function buildGallery() {
+            galleryGrid.innerHTML = '';
+            galleryPhotos.forEach((photo, i) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'gallery-item' + (i === 0 ? ' wide' : '');
+                btn.setAttribute('aria-label', 'Perbesar ' + photo.alt);
+
+                const img = document.createElement('img');
+                img.alt = photo.alt;
+                img.loading = 'lazy';
+                img.decoding = 'async';
+                img.addEventListener('load', () => img.classList.add('loaded'));
+                img.addEventListener('error', () => {
+                    btn.remove();
+                    relayoutGallery();
+                });
+                img.src = photo.src;
+
+                btn.appendChild(img);
+                btn.addEventListener('click', () => openLightbox(i));
+                galleryGrid.appendChild(btn);
+            });
+            relayoutGallery();
         }
 
-        function fallbackCopy(text, cb) {
-            const ta = document.createElement('textarea');
-            ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
-            document.body.appendChild(ta); ta.select();
-            try { document.execCommand('copy'); cb(); } catch (e) { console.log('Copy failed', e); }
-            document.body.removeChild(ta);
+        // Jaga grid tetap rapi: foto pertama lebar, dan jika sisanya ganjil, foto terakhir dilebarkan
+        function relayoutGallery() {
+            const items = Array.from(galleryGrid.querySelectorAll('.gallery-item'));
+            items.forEach(el => el.classList.remove('wide'));
+            if (items.length === 0) return;
+            items[0].classList.add('wide');
+            if ((items.length - 1) % 2 === 1) items[items.length - 1].classList.add('wide');
+            if (items.length === 1) items[0].classList.add('wide');
         }
+
+        function showPhoto(index) {
+            const n = galleryPhotos.length;
+            currentIndex = (index + n) % n;
+            lightboxImg.src = galleryPhotos[currentIndex].src;
+            lightboxImg.alt = galleryPhotos[currentIndex].alt;
+            lbCounter.textContent = (currentIndex + 1) + ' / ' + n;
+        }
+
+        function openLightbox(index) {
+            showPhoto(index);
+            lightbox.classList.add('open');
+            book.style.overflow = 'hidden';
+            requestAnimationFrame(() => lightbox.classList.add('show'));
+            document.getElementById('lbClose').focus();
+        }
+
+        function closeLightbox() {
+            lightbox.classList.remove('show');
+            book.style.overflow = '';
+            setTimeout(() => lightbox.classList.remove('open'), 350);
+        }
+
+        document.getElementById('lbClose').addEventListener('click', closeLightbox);
+        document.getElementById('lbPrev').addEventListener('click', (e) => { e.stopPropagation(); showPhoto(currentIndex - 1); });
+        document.getElementById('lbNext').addEventListener('click', (e) => { e.stopPropagation(); showPhoto(currentIndex + 1); });
+        lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLightbox(); });
+
+        document.addEventListener('keydown', (e) => {
+            if (!lightbox.classList.contains('open')) return;
+            if (e.key === 'Escape') closeLightbox();
+            if (e.key === 'ArrowLeft') showPhoto(currentIndex - 1);
+            if (e.key === 'ArrowRight') showPhoto(currentIndex + 1);
+        });
+
+        // Geser kiri/kanan untuk ganti foto di layar sentuh
+        let touchStartX = 0;
+        lightbox.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].clientX; }, { passive: true });
+        lightbox.addEventListener('touchend', (e) => {
+            const dx = e.changedTouches[0].clientX - touchStartX;
+            if (Math.abs(dx) > 50) showPhoto(currentIndex + (dx < 0 ? 1 : -1));
+        }, { passive: true });
+
+        buildGallery();
 
         // Ucapan & Doa
         const wishForm = document.getElementById('wishForm');
